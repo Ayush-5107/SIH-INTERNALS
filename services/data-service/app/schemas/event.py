@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -50,6 +50,17 @@ class EventOut(BaseModel):
     location_name: Optional[str] = None
     block_number: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def map_event_metadata(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            # It's an ORM object! We can extract attributes
+            d = {k: getattr(data, k) for k in data.__dict__ if not k.startswith("_")}
+            d["metadata"] = getattr(data, "event_metadata", None)
+            d["created_at"] = getattr(data, "created_at", data.timestamp)
+            return d
+        return data
 
     class Config:
         from_attributes = True

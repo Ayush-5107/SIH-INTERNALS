@@ -204,7 +204,6 @@ export default function DashboardPage() {
                         <span style={{
                           fontSize: '11px',
                           fontWeight: bar.active ? 800 : 500,
-                          color: bar.active ? '#0f172a' : '#94a3b8',
                           background: bar.active ? '#18181b' : 'transparent',
                           padding: bar.active ? '2px 8px' : '0',
                           borderRadius: '10px',

@@ -31,7 +31,7 @@ class EventRepository:
             longitude=longitude,
             location_name=location_name,
             block_number=block_number,
-            metadata=metadata
+            event_metadata=metadata
         )
         db.add(event)
         await db.flush()
@@ -57,7 +57,7 @@ class EventRepository:
             event_type=event_type,
             timestamp=timestamp,
             fabric_tx_id=fabric_tx_id,
-            metadata=metadata
+            event_metadata=metadata
         )
         db.add(custody_event)
         await db.flush()

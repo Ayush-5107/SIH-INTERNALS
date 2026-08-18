@@ -49,7 +49,7 @@ async def create_qr(payload: QrCreate, db: AsyncSession = Depends(get_db)):
         message="QR credential reference registered successfully."
     )
 
-@router.get("/{public_ref}", response_model=APIResponse[QrResolveOut])
+@router.get("/{public_ref:path}", response_model=APIResponse[QrResolveOut])
 async def resolve_qr(public_ref: str, db: AsyncSession = Depends(get_db)):
     """
     Resolves public QR reference to its bound unit, batch, and product metadata.

@@ -3,7 +3,13 @@ import pytest
 import pytest_asyncio
 import httpx
 from typing import AsyncGenerator
+import sys
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import text
 
 from app.database import Base
 from app.config import settings
@@ -37,14 +43,24 @@ async def setup_test_db():
     from app.models import Base
     
     async with test_engine.begin() as conn:
-        # Clean up any old tables first to ensure clean state
-        await conn.run_sync(Base.metadata.drop_all)
+        # Clean up any old tables first by dropping schema CASCADE to avoid circular dependencies
+        await conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE;"))
+        await conn.execute(text("CREATE SCHEMA public;"))
+        await conn.execute(text("GRANT ALL ON SCHEMA public TO public;"))
         await conn.run_sync(Base.metadata.create_all)
-        
-    yield
     
+    await test_engine.dispose()
+    yield
+
+@pytest_asyncio.fixture(autouse=True)
+async def clean_db():
+    yield
+    from app.models import Base
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        table_names = [table.name for table in Base.metadata.sorted_tables]
+        if table_names:
+            tables_str = ", ".join(f'"{name}"' for name in table_names)
+            await conn.execute(text(f"TRUNCATE TABLE {tables_str} CASCADE;"))
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
@@ -58,6 +74,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+            await test_engine.dispose()
 
 # Mock Redis Client
 class MockRedis:

@@ -10,6 +10,17 @@ async def test_incident_reporting(client, db_session):
     org_id = uuid.uuid4()
     org = Organization(org_id=org_id, name="Incident Test Org", type="MANUFACTURER", fabric_msp_id="Org1MSP")
     db_session.add(org)
+    
+    from app.models.product import Product
+    from app.models.batch import Batch
+
+    product_id = uuid.uuid4()
+    product = Product(product_id=product_id, name="Milk", product_type="DAIRY")
+    db_session.add(product)
+    await db_session.flush()
+
+    batch = Batch(batch_id="BATCH-INC-001", product_id=product_id, quantity=100.0, state="AVAILABLE", owner_org_id=org_id)
+    db_session.add(batch)
     await db_session.flush()
 
     # Create raw consumer feedback (incident_id is null initially to check nullability)
