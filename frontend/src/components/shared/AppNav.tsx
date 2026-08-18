@@ -301,7 +301,7 @@ export default function AppNav() {
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
             <IconPlus size={14} color="#0f172a" />
-            + New Batch
+            New Batch
           </a>
         </div>
       </header>

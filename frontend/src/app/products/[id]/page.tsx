@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import AuthGuard from '@/components/shared/AuthGuard';
 import AppNav from '@/components/shared/AppNav';
 import { fetchProducts, fetchBatches, fetchUnits, fetchIncidents, fetchEvents } from '@/lib/api';
+import { IconProducts, IconBatches, IconUnitsQR, IconIncidents, IconEvents, IconShield, IconCheck, IconClose } from '@/components/icons/Icons';
 import '../../app.css';
 
 type Tab = 'batches' | 'units' | 'incidents' | 'events' | 'verify';
@@ -23,12 +24,12 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`badge ${STATUS_CLASS[status] || 'badge-muted'}`}>{status}</span>;
 }
 
-const TAB_CONFIG: { key: Tab; label: string; icon: string }[] = [
-  { key: 'batches',   label: 'Batches',   icon: '📦' },
-  { key: 'units',     label: 'Units',     icon: '🔖' },
-  { key: 'incidents', label: 'Incidents', icon: '⚠️' },
-  { key: 'events',    label: 'Events',    icon: '📋' },
-  { key: 'verify',    label: 'Verify',    icon: '✅' },
+const TAB_CONFIG: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  { key: 'batches',   label: 'Batches',   icon: <IconBatches size={16} /> },
+  { key: 'units',     label: 'Units',     icon: <IconUnitsQR size={16} /> },
+  { key: 'incidents', label: 'Incidents', icon: <IconIncidents size={16} /> },
+  { key: 'events',    label: 'Events',    icon: <IconEvents size={16} /> },
+  { key: 'verify',    label: 'Verify',    icon: <IconShield size={16} /> },
 ];
 
 export default function ProductDetailPage() {
@@ -105,7 +106,9 @@ export default function ProductDetailPage() {
               {/* Product Header */}
               <div className="card" style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  <div style={{ fontSize: '40px' }}>🌾</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', background: 'rgba(234, 179, 8, 0.1)', borderRadius: '12px' }}>
+                    <IconProducts size={32} color="#eab308" />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
                       <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>{product.name}</h1>
@@ -146,6 +149,7 @@ export default function ProductDetailPage() {
                       color: activeTab === t.key ? 'var(--primary)' : 'var(--muted)',
                       borderBottom: `2px solid ${activeTab === t.key ? 'var(--primary)' : 'transparent'}`,
                       marginBottom: '-1px', transition: 'color 0.15s',
+                      display: 'flex', alignItems: 'center', gap: '6px'
                     }}
                   >
                     {t.icon} {t.label}
@@ -178,7 +182,7 @@ export default function ProductDetailPage() {
                             <td>{b.quantity} {b.uom}</td>
                             <td style={{ fontSize: '12px' }}>{b.custodian}</td>
                             <td style={{ fontSize: '11px', color: '#fbbf24' }}>{b.next_custodian_org || '—'}</td>
-                            <td>{b.is_public ? <span style={{ color: '#4ade80' }}>🌍</span> : <span style={{ color: 'var(--faint)' }}>🔒</span>}</td>
+                            <td>{b.is_public ? <span style={{ color: '#4ade80', display: 'inline-flex' }} title="Public"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span> : <span style={{ color: 'var(--faint)', display: 'inline-flex' }} title="Private"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>}</td>
                             <td className="mono">{b.date}</td>
                             <td><a href={`/batches/${encodeURIComponent(b.id)}`} className="btn btn-ghost btn-sm">View →</a></td>
                           </tr>
@@ -246,8 +250,8 @@ export default function ProductDetailPage() {
                   <ul className="timeline">
                     {events.map((ev, i) => (
                       <li key={ev.id || i} className="timeline-item">
-                        <div className="timeline-dot" style={{ fontSize: '9px', background: ev.type === 'CUSTODY' ? 'rgba(251,191,36,0.15)' : 'var(--primary-dim)', borderColor: ev.type === 'CUSTODY' ? '#fbbf24' : 'var(--primary)' }}>
-                          {ev.type === 'CUSTODY' ? '🔄' : '👁️'}
+                        <div className="timeline-dot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: ev.type === 'CUSTODY' ? 'rgba(251,191,36,0.15)' : 'var(--primary-dim)', borderColor: ev.type === 'CUSTODY' ? '#fbbf24' : 'var(--primary)', color: ev.type === 'CUSTODY' ? '#fbbf24' : 'var(--primary)' }}>
+                          {ev.type === 'CUSTODY' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
                         </div>
                         <div className="timeline-content">
                           <div className="timeline-title">
@@ -285,8 +289,9 @@ export default function ProductDetailPage() {
                     </button>
                   </form>
                   {verifyResult && (
-                    <div className={`alert alert-${verifyResult.isAuthentic ? 'success' : 'danger'}`}>
-                      {verifyResult.isAuthentic ? '✅' : '❌'} {verifyResult.message}
+                    <div className={`alert alert-${verifyResult.isAuthentic ? 'success' : 'danger'}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {verifyResult.isAuthentic ? <IconCheck size={18} /> : <IconClose size={18} />}
+                      <span>{verifyResult.message}</span>
                     </div>
                   )}
                   <div style={{ background: 'var(--surface2)', borderRadius: '8px', padding: '14px', fontSize: '12px', color: 'var(--faint)' }}>

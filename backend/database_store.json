@@ -968,6 +968,96 @@
   ],
   "scan_events": [
     {
+      "id": "SCAN-54361",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T18:12:01.712282+00:00",
+      "fabric_tx_id": "0x4628ca79616d178dd93a6287bd3315bb15ace0e9"
+    },
+    {
+      "id": "SCAN-64497",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T18:12:01.657886+00:00",
+      "fabric_tx_id": "0xb7f3d6e7af3e6bfeca5a532ca700c6268cdeb0e7"
+    },
+    {
+      "id": "SCAN-18868",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:39:52.970278+00:00",
+      "fabric_tx_id": "0x1835d22340d94a08f706618e5b2e8c268098233f"
+    },
+    {
+      "id": "SCAN-62587",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:39:52.965178+00:00",
+      "fabric_tx_id": "0x48167807a06b4f7178933fac62cc5aaf94542775"
+    },
+    {
+      "id": "SCAN-73884",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:39:40.275781+00:00",
+      "fabric_tx_id": "0xf32f8bf0d290ab97841992d7b4e9c8cde5ca169b"
+    },
+    {
+      "id": "SCAN-64711",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:39:40.270848+00:00",
+      "fabric_tx_id": "0x2533d29dd940f95b80c6a1a9f71b7053b1303e92"
+    },
+    {
+      "id": "SCAN-50473",
+      "entity_id": "QR-A1B2C3D4",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:29:49.855407+00:00",
+      "fabric_tx_id": "0x469aa952789544a00ef88c66d5fd323e4440a5c3"
+    },
+    {
+      "id": "SCAN-84468",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:26:08.519023+00:00",
+      "fabric_tx_id": "0xe8e9d37d11e578a72bcc2424fce1c370c388e1c8"
+    },
+    {
+      "id": "SCAN-53855",
+      "entity_id": "QR-DSL3UO",
+      "actor_role": "consumer",
+      "actor_name": "Web User",
+      "location": "Web App",
+      "result": "OK",
+      "timestamp": "2026-08-18T16:26:08.456953+00:00",
+      "fabric_tx_id": "0x46a529882287373bfde108778f79699b33a3baf1"
+    },
+    {
       "id": "SCAN-59240",
       "entity_id": "QR-A1B2C3D4",
       "actor_role": "consumer",

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/shared/AuthGuard';
 import AppNav from '@/components/shared/AppNav';
 import { fetchProducts, createProduct } from '@/lib/api';
+import { IconProducts } from '@/components/icons/Icons';
 import '../app.css';
 
 interface Product {
@@ -68,7 +69,9 @@ export default function ProductsPage() {
         <div className="app-container">
           <div className="page-header">
             <div>
-              <h1 className="page-title">🌾 Products</h1>
+              <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.5px' }}>
+                <IconProducts size={28} color="#eab308" /> Products
+              </h1>
               <p className="page-subtitle">Registered food product definitions ({products.length} total)</p>
             </div>
             <button id="toggle-add-product" className="btn btn-primary" onClick={() => { setShowForm(v => !v); setMsg(null); }}>
