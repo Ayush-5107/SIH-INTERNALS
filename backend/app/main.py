@@ -602,10 +602,19 @@ async def verify_credential(payload: dict):
             }
         
         # It's physically linked to a real unit!
+        batch = next((b for b in db.get("batches", []) if b["id"] == unit["batchId"]), None)
+        product_name = "a valid product"
+        if batch:
+            product = next((p for p in db.get("products", []) if p["id"] == batch["productId"]), None)
+            if product:
+                product_name = product["name"]
+
         return {
             "code": code,
             "isAuthentic": True,
-            "message": f"Authenticity confirmed! This code belongs to Unit {unit['id']} from Batch {unit['batchId']}."
+            "unitId": unit["id"],
+            "batchId": unit["batchId"],
+            "message": f"Authenticity confirmed! This code belongs to '{product_name}' (Unit {unit['id']}) from Batch {unit['batchId']}."
         }
     else:
         return {

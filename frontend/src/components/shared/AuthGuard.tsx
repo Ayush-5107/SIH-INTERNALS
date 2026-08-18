@@ -31,12 +31,12 @@ export default function AuthGuard({ children, allowedRoles }: { children: React.
 
   if (!authorized) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: '#f1f5f9' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#0f172a' }}>
         <div style={{ marginBottom: '16px' }}>
           <IconShield size={56} color="#ef4444" />
         </div>
         <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.5px' }}>Access Denied</h1>
-        <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '32px', fontWeight: 500 }}>Your current role does not have permission to view this page.</p>
+        <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '32px', fontWeight: 500 }}>Your current role does not have permission to view this page.</p>
         <button className="btn btn-primary" onClick={() => router.push('/dashboard')}>Return to Dashboard</button>
       </div>
     );

@@ -199,10 +199,12 @@ export default function UnitsPage() {
                       </tr>
                       {qrImages[u.id] && (
                         <tr key={`${u.id}-qr`}>
-                          <td colSpan={7} style={{ textAlign: 'center', padding: '16px', background: '#263346' }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={qrImages[u.id]} alt={`QR for ${u.id}`} style={{ borderRadius: '8px', border: '4px solid #1e293b' }} />
-                            <p style={{ marginTop: '8px', fontSize: '12px', color: '#64748b' }}>Scan: {u.outerQR}</p>
+                          <td colSpan={7} style={{ textAlign: 'center', padding: '24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', background: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={qrImages[u.id]} alt={`QR for ${u.id}`} style={{ borderRadius: '8px', width: '150px', height: '150px' }} />
+                              <p style={{ marginTop: '12px', marginBottom: '0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Scan: <span className="mono">{u.outerQR}</span></p>
+                            </div>
                           </td>
                         </tr>
                       )}
