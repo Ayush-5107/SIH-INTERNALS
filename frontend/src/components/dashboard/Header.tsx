@@ -70,7 +70,7 @@ Channel: foodtrace-mainnet-0 (Block #18,492)`;
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/track/batch/${encodeURIComponent(searchQuery.trim())}`;
+      window.location.href = `/batches/${encodeURIComponent(searchQuery.trim())}`;
     }
   };
 

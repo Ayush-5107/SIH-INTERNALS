@@ -38,152 +38,291 @@ export default function LoginPage() {
   }
 
   const roleColor: Record<string, string> = {
-    FARMER: '#4ade80',
-    PROCESSOR: '#818cf8',
-    PACKAGER: '#fbbf24',
-    DISTRIBUTOR: '#22d3ee',
-    RETAILER: '#f472b6',
-    REGULATOR: '#fb923c',
-    ADMIN: '#f87171',
+    FARMER: 'var(--success)',
+    PROCESSOR: 'var(--info)',
+    PACKAGER: 'var(--warning)',
+    DISTRIBUTOR: '#4f46e5',
+    RETAILER: '#db2777',
+    REGULATOR: '#7c3aed',
+    ADMIN: 'var(--danger)',
+  };
+
+  const roleBg: Record<string, string> = {
+    FARMER: 'var(--success-dim)',
+    PROCESSOR: 'var(--info-dim)',
+    PACKAGER: 'var(--warning-dim)',
+    DISTRIBUTOR: '#e0e7ff',
+    RETAILER: '#fce7f3',
+    REGULATOR: '#f3e8ff',
+    ADMIN: 'var(--danger-dim)',
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#0f172a', fontFamily: 'Inter, sans-serif' }}>
-
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      background: 'var(--bg)',
+      fontFamily: 'var(--font)',
+      color: 'var(--text)'
+    }}>
       {/* Left — Login form */}
-      <div style={{ flex: '0 0 420px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 32px', borderRight: '1px solid #1e293b' }}>
-        <div style={{ width: '100%' }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '10px' }}>🥦</div>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f1f5f9', marginBottom: '4px' }}>FoodTrace</h1>
-            <p style={{ color: '#64748b', fontSize: '12px' }}>Food Supply Chain Intelligence Platform</p>
+      <div style={{
+        flex: '0 0 520px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 48px',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.02)'
+      }}>
+        <div style={{ width: '100%', maxWidth: '420px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36.5px' }}>
+            <div style={{
+              width: '54px',
+              height: '54px',
+              borderRadius: '14px',
+              background: 'var(--primary-dim)',
+              color: 'var(--primary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '14px',
+              boxShadow: '0 4px 10px rgba(245, 158, 11, 0.12)'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', letterSpacing: '-0.5px' }}>
+              FoodTrace
+            </h1>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: 500 }}>
+              Food Supply Chain Intelligence Platform
+            </p>
           </div>
 
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '28px' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#f1f5f9', marginBottom: '20px' }}>Sign In</h2>
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '32px',
+            boxShadow: 'var(--shadow)'
+          }}>
+            <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px' }}>
+              Sign In
+            </h2>
 
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && <div className="alert alert-danger" style={{ marginBottom: '20px' }}>{error}</div>}
 
-            <form onSubmit={handleSubmit}>
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label className="form-label">Username</label>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="login-username">Username</label>
                 <input
-                  id="login-username" name="username" type="text"
-                  className="form-input" placeholder="e.g. satyam"
-                  value={form.username} onChange={handleChange} autoComplete="username"
+                  id="login-username"
+                  name="username"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Ramesh"
+                  value={form.username}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  style={{ background: 'var(--surface2)' }}
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: '20px' }}>
-                <label className="form-label">Password</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="login-password">Password</label>
                 <input
-                  id="login-password" name="password" type="password"
-                  className="form-input" placeholder="Enter password"
-                  value={form.password} onChange={handleChange} autoComplete="current-password"
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  className="form-input"
+                  placeholder="Enter password"
+                  value={form.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                  style={{ background: 'var(--surface2)' }}
                 />
               </div>
-              <button id="login-submit" type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+              <button
+                id="login-submit"
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '12px 18px', marginTop: '6px' }}
+                disabled={loading}
+              >
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: '18px', fontSize: '12px', color: '#475569' }}>
-            <a href="/" style={{ color: '#22d3ee', textDecoration: 'none' }}>← Landing Page</a>
+          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--muted)' }}>
+            <a href="/" style={{ color: 'var(--info)', textDecoration: 'none', fontWeight: 600 }}>← Landing Page</a>
             {' · '}
-            <a href="/track" style={{ color: '#22d3ee', textDecoration: 'none' }}>Track QR (Public)</a>
+            <a href="/track" style={{ color: 'var(--info)', textDecoration: 'none', fontWeight: 600 }}>Track QR (Public)</a>
           </p>
         </div>
       </div>
 
-      {/* Right — Quick Login (DEMO — remove before production) */}
-      <div style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
-        <div style={{ maxWidth: '680px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9' }}>⚡ Quick Login</h2>
+      {/* Right — Quick Login */}
+      <div style={{ flex: 1, padding: '48px 64px', overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px' }}>
+              ⚡ Quick Login Persona Portal
+            </h2>
             <span style={{
-              fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px',
-              background: '#451a03', color: '#fbbf24', border: '1px solid #fbbf2444',
-              textTransform: 'uppercase', letterSpacing: '0.5px',
-            }}>Demo Only — Remove Before Production</span>
+              fontSize: '10px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '6px',
+              background: 'var(--warning-dim)',
+              color: 'var(--warning)',
+              border: '1px solid rgba(217, 119, 6, 0.15)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>Demo Mode Console</span>
           </div>
-          <p style={{ color: '#475569', fontSize: '12px', marginBottom: '24px' }}>
-            Click any card to instantly log in as that stakeholder. Each user has a fixed role that determines
-            what batches they can create, accept, and view.
+          <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '28px', lineHeight: 1.6 }}>
+            Select an operational stakeholder identity card below to instantly access their corresponding dashboard environment and roles.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '12px' }}>
-            {USER_REGISTRY.map(u => (
-              <button
-                key={u.username}
-                id={`quick-login-${u.username}`}
-                onClick={() => quickLogin(u)}
-                style={{
-                  background: '#1e293b',
-                  border: `1px solid ${roleColor[u.role] ?? '#334155'}33`,
-                  borderRadius: '10px',
-                  padding: '16px 18px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'border-color 0.15s, background 0.15s',
-                  width: '100%',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#263346')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#1e293b')}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '24px' }}>{u.icon}</span>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '16px',
+            marginBottom: '36px'
+          }}>
+            {USER_REGISTRY.map(u => {
+              const borderCol = roleColor[u.role] || 'var(--border)';
+              const badgeBgCol = roleBg[u.role] || 'var(--bg)';
+              const badgeTxtCol = roleColor[u.role] || 'var(--text)';
+              return (
+                <button
+                  key={u.username}
+                  id={`quick-login-${u.username}`}
+                  onClick={() => quickLogin(u)}
+                  style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    padding: '20px 24px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    width: '100%',
+                    boxShadow: 'var(--shadow)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '12px'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.borderColor = borderCol;
+                    e.currentTarget.style.boxShadow = '0 12px 30px -4px rgba(0, 0, 0, 0.08)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow)';
+                  }}
+                >
                   <div>
-                    <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '14px' }}>{u.org}</div>
-                    <div style={{
-                      fontSize: '10px', fontWeight: 700,
-                      color: roleColor[u.role] ?? '#94a3b8',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                    }}>
-                      {u.role}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: badgeBgCol,
+                        color: badgeTxtCol,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '14.5px',
+                        border: `1px solid ${borderCol}22`,
+                        flexShrink: 0
+                      }}>
+                        {u.username[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 800, color: 'var(--text)', fontSize: '14.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {u.org}
+                        </div>
+                        <span style={{
+                          display: 'inline-block',
+                          marginTop: '2px',
+                          fontSize: '9.5px',
+                          fontWeight: 700,
+                          color: badgeTxtCol,
+                          background: badgeBgCol,
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {u.role}
+                        </span>
+                      </div>
                     </div>
+                    <p style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5, minHeight: '36px' }}>
+                      {u.description}
+                    </p>
                   </div>
-                </div>
-                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '10px', lineHeight: 1.5 }}>
-                  {u.description}
-                </p>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <code style={{ fontSize: '11px', color: '#22d3ee', background: '#0f172a', padding: '2px 8px', borderRadius: '4px' }}>
-                    {u.username}
-                  </code>
-                  <code style={{ fontSize: '11px', color: '#475569', background: '#0f172a', padding: '2px 8px', borderRadius: '4px' }}>
-                    {u.password}
-                  </code>
-                </div>
-              </button>
-            ))}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                    <span style={{ fontSize: '10.5px', color: 'var(--faint)', fontWeight: 600 }}>Credentials:</span>
+                    <code style={{ fontSize: '11px', color: 'var(--info)', background: 'var(--info-dim)', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                      {u.username}
+                    </code>
+                    <code style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--bg)', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                      {u.password}
+                    </code>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Chain flow diagram */}
-          <div style={{ marginTop: '32px', background: '#1e293b', border: '1px solid #334155', borderRadius: '10px', padding: '18px 20px' }}>
-            <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
-              Supply Chain Order
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '24px 28px',
+            boxShadow: 'var(--shadow)'
+          }}>
+            <p style={{
+              fontSize: '11.5px',
+              color: 'var(--muted)',
+              marginBottom: '16px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.8px',
+              fontWeight: 700
+            }}>
+              Supply Chain Chain-of-Custody Progression
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              {['🌾 Farmer', '⚙️ Processor', '📦 Packager', '🚚 Distributor', '🏪 Retailer', '→', '🌍 Public (QR Scan)'].map((step, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {['Farmer', 'Processor', 'Packager', 'Distributor', 'Retailer', '→', 'Public (QR Scan)'].map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{
-                    fontSize: '11px',
-                    color: step === '→' ? '#475569' : step.includes('Public') ? '#4ade80' : '#94a3b8',
-                    background: step === '→' || step.includes('Public') ? 'transparent' : '#263346',
-                    padding: step === '→' ? '0' : '3px 10px',
-                    borderRadius: '12px',
-                    fontWeight: 600,
+                    fontSize: '12px',
+                    color: step === '→' ? 'var(--faint)' : step.includes('Public') ? 'var(--success)' : 'var(--text)',
+                    background: step === '→' || step.includes('Public') ? 'transparent' : 'var(--bg)',
+                    padding: step === '→' ? '0' : '4px 12px',
+                    borderRadius: '20px',
+                    fontWeight: 700,
+                    border: step === '→' || step.includes('Public') ? 'none' : '1px solid var(--border)'
                   }}>
                     {step}
                   </span>
-                  {i < 5 && i !== 4 && <span style={{ color: '#334155', fontSize: '14px' }}>→</span>}
-                  {i === 4 && <span style={{ color: '#334155', fontSize: '14px' }}>→</span>}
+                  {i < 5 && <span style={{ color: 'var(--faint)', fontSize: '14px', fontWeight: 800 }}>→</span>}
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: '11px', color: '#475569', marginTop: '10px' }}>
-              Retailer is the <strong style={{ color: '#f1f5f9' }}>chain terminus</strong> — once they accept custody the batch is marked
-              <strong style={{ color: '#4ade80' }}> ON_SHELF</strong> and the QR becomes publicly scannable by consumers.
+            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '14px', lineHeight: 1.5 }}>
+              The <strong style={{ color: 'var(--text)' }}>Retailer</strong> serves as the chain terminus. Once they accept custody, the batch resolves to <strong style={{ color: 'var(--success)' }}>ON_SHELF</strong>, permitting secure FSSAI verification & consumer QR lookup checks.
             </p>
           </div>
         </div>

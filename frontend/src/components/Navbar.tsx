@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './Navbar.module.css';
 
 const NAV_LINKS = [
@@ -10,11 +11,11 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -25,12 +26,13 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    setSearchResult(`Found verified on-chain record for "${searchQuery}" committed to Nashik & Pune Hubs.`);
+    setSearchOpen(false);
+    router.push(`/one-food?ref=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   const handleQuickTag = (tag: string) => {
-    setSearchQuery(tag);
-    setSearchResult(`Found verified batch "${tag}" with 6 cryptographic custody checkpoint commits.`);
+    setSearchOpen(false);
+    router.push(`/one-food?ref=${encodeURIComponent(tag)}`);
   };
 
   return (
@@ -111,7 +113,7 @@ export default function Navbar() {
               <button
                 className={styles.closeBtn}
                 type="button"
-                onClick={() => { setSearchOpen(false); setSearchResult(null); }}
+                onClick={() => setSearchOpen(false)}
                 aria-label="Close search"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -130,7 +132,7 @@ export default function Navbar() {
                 <input
                   type="text"
                   className={styles.searchInput}
-                  placeholder="Enter Batch ID (e.g. BATCH-MBTSDM2UM) or crop..."
+                  placeholder="Enter Batch ID (e.g. batch-orange-001-raw) or crop..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
@@ -144,9 +146,8 @@ export default function Navbar() {
             <div className={styles.quickTags}>
               <span className={styles.quickTagLabel}>Try quick samples:</span>
               {[
-                { id: 'BATCH-MBTSDM2UM', label: 'BATCH-MBTSDM2UM (Paddy)' },
-                { id: 'BATCH-IKHJWTOYD', label: 'BATCH-IKHJWTOYD (Soybean)' },
-                { id: 'BATCH-GQU2F3SI4', label: 'BATCH-GQU2F3SI4 (Wheat)' },
+                { id: 'batch-orange-001-raw', label: 'batch-orange-001-raw (Oranges)' },
+                { id: 'batch-juice-101-proc', label: 'batch-juice-101-proc (Juice)' }
               ].map((tag) => (
                 <button key={tag.id} className={styles.quickTagBtn} onClick={() => handleQuickTag(tag.id)}>
                   {tag.label}
@@ -154,24 +155,6 @@ export default function Navbar() {
               ))}
             </div>
 
-            {searchResult && (
-              <div className={styles.searchResultCard}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
-                  <span>{searchResult}</span>
-                </div>
-                <a
-                  href="/track"
-                  className="btn btn--grass"
-                  style={{ marginTop: '12px', fontSize: '12px', padding: '8px 18px', height: 'auto', alignSelf: 'flex-start' }}
-                >
-                  Open Provenance Explorer →
-                </a>
-              </div>
-            )}
           </div>
         </div>
       )}

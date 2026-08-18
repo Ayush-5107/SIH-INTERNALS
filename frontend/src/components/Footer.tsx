@@ -40,7 +40,7 @@ export default function Footer() {
               <li><a href="/dashboard/batches" className={styles.footerLink}>Production Batches</a></li>
               <li><a href="/dashboard/units" className={styles.footerLink}>Serialized Units</a></li>
               <li><a href="/dashboard/recall" className={styles.footerLink}>Risk &amp; Recalls</a></li>
-              <li><a href="/track/batch/BATCH-MBTSDM2UM" className={styles.footerLink}>Batch Explorer</a></li>
+              <li><a href="/one-food?ref=batch-orange-001-raw" className={styles.footerLink}>Batch Explorer</a></li>
             </ul>
           </div>
 
