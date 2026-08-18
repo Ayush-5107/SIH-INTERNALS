@@ -23,3 +23,26 @@ class UserMeResponse(BaseModel):
     role: str
     org_id: str
     status: str = "ACTIVE"
+
+
+class CreateOrganizationRequest(BaseModel):
+    name: str = Field(..., json_schema_extra={"example": "Punjab Organic Grains Ltd."})
+    type: str = Field("MANUFACTURER", json_schema_extra={"example": "MANUFACTURER"})
+
+
+class OrganizationResponse(BaseModel):
+    id: str
+    name: str
+    type: str
+    status: str = "ACTIVE"
+
+
+class AssignRoleRequest(BaseModel):
+    user_id: str = Field(..., json_schema_extra={"example": "usr-inspector"})
+    role: str = Field(..., json_schema_extra={"example": "REGULATOR"})
+
+
+class AssignRoleResponse(BaseModel):
+    user_id: str
+    role: str
+    status: str = "UPDATED"

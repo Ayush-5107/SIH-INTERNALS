@@ -16,6 +16,14 @@ async def create_product(
     return await product_service.create_product(payload, actor)
 
 
+@router.get("", response_model=list[ProductResponse])
+async def list_products(
+    actor: ActorContext = Depends(get_current_actor)
+):
+    """Retrieve list of all registered food products."""
+    return await product_service.list_products()
+
+
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(
     product_id: str,
@@ -23,3 +31,4 @@ async def get_product(
 ):
     """Retrieve product definition by product ID."""
     return await product_service.get_product(product_id)
+

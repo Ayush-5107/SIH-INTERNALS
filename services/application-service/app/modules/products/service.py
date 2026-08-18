@@ -60,3 +60,19 @@ class ProductService:
             created_at=product["created_at"],
             blockchain_tx_id=product.get("blockchain_tx_id")
         )
+
+    async def list_products(self) -> list[ProductResponse]:
+        products_dict = getattr(self.data_client, "products", {})
+        results = []
+        for p in products_dict.values():
+            results.append(ProductResponse(
+                product_id=p["product_id"],
+                name=p["name"],
+                sku=p["sku"],
+                category=p.get("category", "BEVERAGE"),
+                producer_org_id=p["producer_org_id"],
+                created_at=p.get("created_at", "2026-08-16T00:00:00Z"),
+                blockchain_tx_id=p.get("blockchain_tx_id")
+            ))
+        return results
+

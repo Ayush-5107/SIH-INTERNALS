@@ -4,6 +4,23 @@ import AuthGuard from '@/components/shared/AuthGuard';
 import AppNav from '@/components/shared/AppNav';
 import { fetchBatches, createBatch, acceptCustody, assignNextCustodian, fetchUsers, fetchProducts } from '@/lib/api';
 import { getUserName, getUserOrg, getUserRole } from '@/lib/auth';
+import {
+  Package,
+  Plus,
+  Search,
+  CheckCircle2,
+  Clock,
+  Globe,
+  Lock,
+  ArrowRight,
+  UserCheck,
+  UserPlus,
+  Eye,
+  X,
+  Layers,
+  Building2,
+  AlertCircle
+} from 'lucide-react';
 import '../app.css';
 
 interface Batch {
@@ -39,14 +56,15 @@ function StatusBadge({ status }: { status: string }) {
 
 function CustodyBadge({ status }: { status?: string }) {
   if (!status) return null;
-  const map: Record<string, [string, string]> = {
-    PENDING_TRANSFER: ['#fbbf24', '⏳ PENDING'],
-    IN_CUSTODY:       ['#4ade80', '✅ IN CUSTODY'],
-    DELIVERED:        ['#818cf8', '📦 DELIVERED'],
+  const map: Record<string, [string, string, React.ReactNode]> = {
+    PENDING_TRANSFER: ['#f59e0b', 'PENDING', <Clock key="clk" size={11} />],
+    IN_CUSTODY:       ['#10b981', 'IN CUSTODY', <CheckCircle2 key="chk" size={11} />],
+    DELIVERED:        ['#6366f1', 'DELIVERED', <Package key="pkg" size={11} />],
   };
-  const [color, label] = map[status] || ['#64748b', status];
+  const [color, label, icon] = map[status] || ['#64748b', status, null];
   return (
-    <span style={{ fontSize: '10px', fontWeight: 700, color, background: `${color}22`, padding: '2px 7px', borderRadius: '4px', border: `1px solid ${color}44` }}>
+    <span style={{ fontSize: '11px', fontWeight: 700, color, background: `${color}18`, padding: '3px 8px', borderRadius: '6px', border: `1px solid ${color}33`, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+      {icon}
       {label}
     </span>
   );
@@ -59,6 +77,7 @@ export default function BatchesPage() {
   const [loading, setLoading]   = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [msg, setMsg]           = useState<{ type: 'success' | 'danger' | 'info' | 'warning'; text: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Form state
   const [form, setForm] = useState({
@@ -72,7 +91,7 @@ export default function BatchesPage() {
 
   // Per-row actions
   const [acceptLoading, setAcceptLoading]   = useState<string | null>(null);
-  const [assignState, setAssignState]       = useState<Record<string, string>>({});  // batchId → username input
+  const [assignState, setAssignState]       = useState<Record<string, string>>({});
   const [assignLoading, setAssignLoading]   = useState<string | null>(null);
   const [expandedBatch, setExpandedBatch]   = useState<string | null>(null);
 
@@ -93,7 +112,6 @@ export default function BatchesPage() {
     setLoading(false);
   }
 
-  // ── Form helpers ──────────────────────────────────────────────
   function addParent() {
     const id = form.parentInput.trim().toUpperCase();
     if (!id || form.parentBatchIds.includes(id)) return;
@@ -126,7 +144,7 @@ export default function BatchesPage() {
       const newBatch = res.batch || res;
       if (newBatch?.id) {
         setBatches(prev => [newBatch, ...prev]);
-        setMsg({ type: 'success', text: `✅ Batch ${newBatch.id} created.${form.nextCustodianUsername ? ` Awaiting acceptance by ${form.nextCustodianUsername}.` : ''}` });
+        setMsg({ type: 'success', text: `Batch ${newBatch.id} created successfully.${form.nextCustodianUsername ? ` Awaiting acceptance by ${form.nextCustodianUsername}.` : ''}` });
         setForm({ productId: '', quantity: '', uom: 'KG', isRootBatch: true, parentBatchIds: [], parentInput: '', nextCustodianUsername: '' });
         setShowForm(false);
       } else {
@@ -138,27 +156,24 @@ export default function BatchesPage() {
     setSubmitting(false);
   }
 
-  // ── Accept custody ────────────────────────────────────────────
   async function handleAccept(batch: Batch) {
     if (!myUsername) return;
     setAcceptLoading(batch.id);
     setMsg(null);
     try {
       const res = await acceptCustody(batch.id, myUsername);
-      setMsg({ type: 'success', text: `✅ ${res.message}` });
-      // Update local state
+      setMsg({ type: 'success', text: res.message });
       setBatches(prev => prev.map(b =>
         b.id === batch.id
           ? { ...b, custodian: res.new_custodian, status: res.new_status, custody_status: res.is_public ? 'DELIVERED' : 'IN_CUSTODY', is_public: res.is_public, next_custodian_username: undefined, next_custodian_org: undefined }
           : b
       ));
     } catch (err: unknown) {
-      setMsg({ type: 'danger', text: `❌ ${err instanceof Error ? err.message : 'Accept failed.'}` });
+      setMsg({ type: 'danger', text: err instanceof Error ? err.message : 'Accept failed.' });
     }
     setAcceptLoading(null);
   }
 
-  // ── Assign next custodian ─────────────────────────────────────
   async function handleAssign(batchId: string) {
     const nextUser = assignState[batchId]?.trim();
     if (!nextUser) return;
@@ -166,7 +181,7 @@ export default function BatchesPage() {
     setMsg(null);
     try {
       const res = await assignNextCustodian(batchId, nextUser, myUsername);
-      setMsg({ type: 'info', text: `📬 ${res.message}` });
+      setMsg({ type: 'info', text: res.message });
       setBatches(prev => prev.map(b =>
         b.id === batchId
           ? { ...b, next_custodian_username: res.next_custodian_username, next_custodian_org: res.next_custodian_org, custody_status: 'PENDING_TRANSFER' }
@@ -174,7 +189,7 @@ export default function BatchesPage() {
       ));
       setAssignState(s => ({ ...s, [batchId]: '' }));
     } catch (err: unknown) {
-      setMsg({ type: 'danger', text: `❌ ${err instanceof Error ? err.message : 'Assign failed.'}` });
+      setMsg({ type: 'danger', text: err instanceof Error ? err.message : 'Assign failed.' });
     }
     setAssignLoading(null);
   }
@@ -184,44 +199,95 @@ export default function BatchesPage() {
     b.custody_status === 'PENDING_TRANSFER'
   );
 
+  const filteredBatches = batches.filter(b =>
+    b.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.productId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.custodian.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPublicCount = batches.filter(b => b.is_public).length;
+  const totalPendingCount = batches.filter(b => b.custody_status === 'PENDING_TRANSFER').length;
+
   return (
     <AuthGuard>
       <div className="app-page">
         <AppNav />
         <div className="app-container">
 
-          {/* Header */}
+          {/* Header Bar */}
           <div className="page-header">
             <div>
-              <h1 className="page-title">📦 Batches</h1>
+              <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Package size={24} color="#0f172a" /> Batches Registry
+              </h1>
               <p className="page-subtitle">
-                Food batch registry ({batches.length} total) — logged in as{' '}
-                <strong style={{ color: 'var(--primary)' }}>{myUsername}</strong>{' '}
-                <span style={{ color: 'var(--faint)', fontSize: '11px' }}>({myRole})</span>
+                Food supply chain batch tracking ({batches.length} total) — Logged in as{' '}
+                <strong style={{ color: '#0f172a' }}>{myUsername}</strong>{' '}
+                <span style={{ color: '#64748b', fontSize: '11px' }}>({myRole})</span>
               </p>
             </div>
-            <button id="toggle-add-batch" className="btn btn-primary" onClick={() => { setShowForm(v => !v); setMsg(null); }}>
-              {showForm ? '✕ Cancel' : '+ Create Batch'}
+            <button
+              id="toggle-add-batch"
+              className="btn btn-primary"
+              onClick={() => { setShowForm(v => !v); setMsg(null); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              {showForm ? <><X size={16} /> Cancel</> : <><Plus size={16} /> Create Batch</>}
             </button>
+          </div>
+
+          {/* Metric Cards Summary */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Package size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Total Batches</div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>{batches.length}</div>
+              </div>
+            </div>
+
+            <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#d1fae5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Globe size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Public Scannable</div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>{totalPublicCount}</div>
+              </div>
+            </div>
+
+            <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#e0e7ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Clock size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Pending Transfers</div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>{totalPendingCount}</div>
+              </div>
+            </div>
           </div>
 
           {msg && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
-          {/* Pending acceptance alert */}
+          {/* Pending Custody Alert */}
           {myPendingBatches.length > 0 && (
             <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-              <span>📲 <strong>{myPendingBatches.length} batch(es)</strong> are awaiting your custody acceptance.</span>
-              <span style={{ fontSize: '12px', color: 'var(--warning)' }}>Scroll down to find batches with the Accept button →</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={16} /> <strong>{myPendingBatches.length} batch(es)</strong> are awaiting your custody acceptance.
+              </span>
+              <span style={{ fontSize: '12px', color: '#d97706', fontWeight: 600 }}>Scroll down to click Accept →</span>
             </div>
           )}
 
-          {/* ── Create Batch Form ───────────────────────────────── */}
+          {/* Create Batch Form */}
           {showForm && (
             <div className="form-section">
-              <h2 className="section-title">🆕 Create New Batch</h2>
+              <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Plus size={18} /> Create New Batch
+              </h2>
               <form onSubmit={handleSubmit}>
-
-                {/* Basic fields */}
                 <div className="form-grid" style={{ marginBottom: '18px' }}>
                   <div className="form-group">
                     <label className="form-label">Product *</label>
@@ -244,9 +310,11 @@ export default function BatchesPage() {
                   </div>
                 </div>
 
-                {/* Lineage — root or child */}
+                {/* Lineage */}
                 <div style={{ marginBottom: '18px' }}>
-                  <label className="form-label" style={{ marginBottom: '8px', display: 'block' }}>📌 Batch Lineage</label>
+                  <label className="form-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Layers size={14} /> Batch Lineage
+                  </label>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                     {[true, false].map(isRoot => (
                       <button
@@ -254,19 +322,19 @@ export default function BatchesPage() {
                         type="button"
                         onClick={() => setForm(p => ({ ...p, isRootBatch: isRoot, parentBatchIds: [] }))}
                         style={{
-                          flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                          border: `2px solid ${form.isRootBatch === isRoot ? 'var(--primary)' : 'var(--border)'}`,
-                          background: form.isRootBatch === isRoot ? 'var(--primary-dim)' : 'var(--surface2)',
-                          color: form.isRootBatch === isRoot ? 'var(--primary)' : 'var(--muted)',
+                          flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
+                          border: `2px solid ${form.isRootBatch === isRoot ? '#0284c7' : '#cbd5e1'}`,
+                          background: form.isRootBatch === isRoot ? '#e0f2fe' : '#ffffff',
+                          color: form.isRootBatch === isRoot ? '#0369a1' : '#64748b',
                         }}
                       >
-                        {isRoot ? '🌱 Root / Origin batch — no parents' : '🔗 Derived batch — has parent batch(es)'}
+                        {isRoot ? '🌱 Root Origin Batch (No parents)' : '🔗 Derived Batch (Has parent batches)'}
                       </button>
                     ))}
                   </div>
 
                   {!form.isRootBatch && (
-                    <div style={{ background: 'var(--surface2)', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px 14px', border: '1px solid #cbd5e1' }}>
                       <label className="form-label" style={{ marginBottom: '6px', display: 'block' }}>Parent Batch IDs</label>
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                         <input className="form-input" style={{ flex: 1 }}
@@ -278,63 +346,64 @@ export default function BatchesPage() {
                       </div>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {form.parentBatchIds.map(id => (
-                          <span key={id} style={{ background: 'var(--primary-dim)', color: 'var(--primary)', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span key={id} style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             {id}
-                            <button type="button" onClick={() => removeParent(id)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '12px', padding: 0 }}>×</button>
+                            <button type="button" onClick={() => removeParent(id)} style={{ background: 'none', border: 'none', color: '#0369a1', cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
                           </span>
                         ))}
-                        {form.parentBatchIds.length === 0 && <span style={{ color: 'var(--faint)', fontSize: '11px' }}>No parents added yet</span>}
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Next custodian */}
+                {/* Next Custodian */}
                 <div style={{ marginBottom: '18px' }}>
-                  <label className="form-label" style={{ marginBottom: '8px', display: 'block' }}>
-                    📬 Assign Next Custodian (optional — can be done later)
+                  <label className="form-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <UserPlus size={14} /> Assign Next Custodian (Optional)
                   </label>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <select
-                      className="form-select"
-                      style={{ flex: 1 }}
-                      value={form.nextCustodianUsername}
-                      onChange={e => setForm(p => ({ ...p, nextCustodianUsername: e.target.value }))}
-                    >
-                      <option value="">— Skip for now —</option>
-                      {users.filter(u => u.username !== myUsername).map(u => (
-                        <option key={u.username} value={u.username}>
-                          {u.username} · {u.org} [{u.role}]
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {form.nextCustodianUsername && (
-                    <p style={{ fontSize: '11px', color: 'var(--warning)', marginTop: '6px' }}>
-                      ⚡ Only <strong>{form.nextCustodianUsername}</strong> will be able to accept this batch.
-                      {users.find(u => u.username === form.nextCustodianUsername)?.role === 'RETAILER' &&
-                        ' As a Retailer, they are the chain terminus — QR will go public upon acceptance.'}
-                    </p>
-                  )}
+                  <select
+                    className="form-select"
+                    value={form.nextCustodianUsername}
+                    onChange={e => setForm(p => ({ ...p, nextCustodianUsername: e.target.value }))}
+                  >
+                    <option value="">— Skip for now —</option>
+                    {users.filter(u => u.username !== myUsername).map(u => (
+                      <option key={u.username} value={u.username}>
+                        {u.username} · {u.org} [{u.role}]
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <button id="submit-batch" type="submit" className="btn btn-primary" disabled={submitting}>
                     {submitting ? 'Creating…' : '✓ Create Batch'}
                   </button>
-                  <span style={{ fontSize: '11px', color: 'var(--faint)' }}>
-                    Creating as <strong style={{ color: 'var(--text)' }}>{myOrg || myUsername}</strong> ({myRole})
-                  </span>
                 </div>
               </form>
             </div>
           )}
 
-          {/* ── Batch Table ───────────────────────────────────── */}
+          {/* Search Filter Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                placeholder="Search batch ID, product ID, custodian..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="form-input"
+                style={{ paddingLeft: '36px', height: '40px', fontSize: '13px' }}
+              />
+            </div>
+          </div>
+
+          {/* Batch Table */}
           {loading ? (
             <div className="loading">Loading batches…</div>
-          ) : batches.length === 0 ? (
-            <div className="empty-state">No batches found. Create one above.</div>
+          ) : filteredBatches.length === 0 ? (
+            <div className="empty-state">No batches found matching criteria.</div>
           ) : (
             <div className="table-wrapper">
               <table className="data-table">
@@ -352,72 +421,73 @@ export default function BatchesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {batches.map(b => {
+                  {filteredBatches.map(b => {
                     const isMyAcceptable = (b.next_custodian_username || '').toLowerCase() === myUsername.toLowerCase() && b.custody_status === 'PENDING_TRANSFER';
                     const amCurrentCustodian = b.custodian === (myOrg || myUsername);
                     const isExpanded = expandedBatch === b.id;
 
                     return (
                       <>
-                        <tr key={b.id} style={isMyAcceptable ? { background: 'rgba(251,191,36,0.04)' } : undefined}>
-                          <td className="mono" style={{ fontSize: '11px' }}>{b.id}</td>
-                          <td className="mono" style={{ fontSize: '11px' }}>{b.productId}</td>
+                        <tr key={b.id} style={isMyAcceptable ? { background: '#fef3c7' } : undefined}>
+                          <td className="mono" style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a' }}>{b.id}</td>
+                          <td className="mono" style={{ fontSize: '12px' }}>{b.productId}</td>
                           <td><StatusBadge status={b.status} /></td>
                           <td><CustodyBadge status={b.custody_status} /></td>
-                          <td style={{ fontSize: '12px' }}>{b.quantity} {b.uom}</td>
-                          <td style={{ fontSize: '12px' }}>{b.custodian}</td>
-                          <td style={{ fontSize: '11px' }}>
+                          <td style={{ fontSize: '12px', fontWeight: 700 }}>{b.quantity} {b.uom}</td>
+                          <td style={{ fontSize: '12px', fontWeight: 600 }}>{b.custodian}</td>
+                          <td style={{ fontSize: '12px' }}>
                             {b.next_custodian_org
-                              ? <span style={{ color: isMyAcceptable ? '#fbbf24' : 'var(--muted)' }}>⏳ {b.next_custodian_org}</span>
-                              : <span style={{ color: 'var(--faint)' }}>—</span>}
+                              ? <span style={{ color: isMyAcceptable ? '#d97706' : '#64748b', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {b.next_custodian_org}</span>
+                              : <span style={{ color: '#94a3b8' }}>—</span>}
                           </td>
                           <td>
                             {b.is_public
-                              ? <span style={{ color: '#4ade80', fontSize: '11px', fontWeight: 700 }}>🌍 Yes</span>
-                              : <span style={{ color: 'var(--faint)', fontSize: '11px' }}>🔒 No</span>}
+                              ? <span style={{ color: '#059669', fontSize: '11px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Globe size={13} /> Yes</span>
+                              : <span style={{ color: '#64748b', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Lock size={13} /> No</span>}
                           </td>
                           <td>
-                            <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                              <a href={`/batches/${encodeURIComponent(b.id)}`} className="btn btn-ghost btn-sm">View</a>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <a href={`/batches/${encodeURIComponent(b.id)}`} className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Eye size={13} /> View
+                              </a>
 
-                              {/* Accept custody — only for assigned user */}
+                              {/* Accept custody */}
                               {isMyAcceptable && (
                                 <button
                                   className="btn btn-sm"
-                                  style={{ background: '#fbbf24', color: '#0f172a', fontWeight: 700 }}
+                                  style={{ background: '#f59e0b', color: '#ffffff', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                   disabled={acceptLoading === b.id}
                                   onClick={() => handleAccept(b)}
-                                  title="You are the assigned next custodian — click to accept"
                                 >
-                                  {acceptLoading === b.id ? '⏳' : '📲 Accept'}
+                                  <UserCheck size={13} /> Accept
                                 </button>
                               )}
 
-                              {/* Assign next custodian — only for current custodian with no next assigned */}
+                              {/* Assign next custodian */}
                               {amCurrentCustodian && !b.next_custodian_username && b.status !== 'ON_SHELF' && (
                                 <button
                                   className="btn btn-ghost btn-sm"
                                   onClick={() => setExpandedBatch(isExpanded ? null : b.id)}
-                                  title="Assign next custodian for this batch"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                 >
-                                  📬 {isExpanded ? 'Cancel' : 'Assign'}
+                                  <UserPlus size={13} /> {isExpanded ? 'Cancel' : 'Assign'}
                                 </button>
                               )}
                             </div>
                           </td>
                         </tr>
 
-                        {/* Inline assign next custodian panel */}
+                        {/* Inline Assign Next Custodian Panel */}
                         {isExpanded && amCurrentCustodian && (
                           <tr key={`${b.id}-assign`}>
-                            <td colSpan={9} style={{ background: 'var(--surface2)', padding: '12px 16px' }}>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-                                  📬 Assign next custodian for <strong style={{ color: 'var(--text)' }}>{b.id}</strong>:
+                            <td colSpan={9} style={{ background: '#f8fafc', padding: '12px 16px', borderBottom: '1px solid #cbd5e1' }}>
+                              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <UserPlus size={14} /> Assign next custodian for <strong>{b.id}</strong>:
                                 </span>
                                 <select
                                   className="form-select"
-                                  style={{ fontSize: '12px', height: '32px', width: 'auto', minWidth: '220px' }}
+                                  style={{ fontSize: '12px', height: '34px', width: 'auto', minWidth: '220px' }}
                                   value={assignState[b.id] || ''}
                                   onChange={e => setAssignState(s => ({ ...s, [b.id]: e.target.value }))}
                                 >
@@ -429,16 +499,12 @@ export default function BatchesPage() {
                                   ))}
                                 </select>
                                 <button
-                                  className="btn btn-sm"
-                                  style={{ background: 'var(--primary)', color: '#0f172a' }}
+                                  className="btn btn-sm btn-primary"
                                   disabled={!assignState[b.id] || assignLoading === b.id}
                                   onClick={() => handleAssign(b.id)}
                                 >
-                                  {assignLoading === b.id ? 'Assigning…' : '✓ Assign'}
+                                  {assignLoading === b.id ? 'Assigning…' : '✓ Confirm Assignment'}
                                 </button>
-                                {assignState[b.id] && users.find(u => u.username === assignState[b.id])?.role === 'RETAILER' && (
-                                  <span style={{ fontSize: '11px', color: '#f472b6' }}>🏪 Retailer = chain terminus</span>
-                                )}
                               </div>
                             </td>
                           </tr>
@@ -448,11 +514,6 @@ export default function BatchesPage() {
                   })}
                 </tbody>
               </table>
-              <p style={{ padding: '10px 14px', fontSize: '11px', color: 'var(--faint)', borderTop: '1px solid var(--border)' }}>
-                💡 <strong style={{ color: 'var(--muted)' }}>📲 Accept</strong> is shown only to the assigned next custodian.{' '}
-                <strong style={{ color: 'var(--muted)' }}>📬 Assign</strong> is shown only to the current custodian.{' '}
-                🌍 Public = QR is scannable by consumers.
-              </p>
             </div>
           )}
         </div>

@@ -350,3 +350,197 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
   font-size: 14px;
 }
 
+/* ── FACTORY LASER PRINT SHEET MODAL ──────────────────────── */
+.factory-print-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.factory-print-top-bar {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.factory-print-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.factory-print-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-print-now {
+  background: #059669;
+  color: #ffffff;
+  font-weight: 800;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid #047857;
+  transition: all 0.2s ease;
+}
+
+.btn-print-now:hover {
+  background: #10b981;
+}
+
+.btn-download-pdf {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 800;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid #0369a1;
+  transition: all 0.2s ease;
+}
+
+.btn-download-pdf:hover {
+  background: #0369a1;
+}
+
+.factory-print-sheet-body {
+  flex: 1;
+  background: #f8fafc;
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.factory-label-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .factory-label-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.factory-label-card {
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.factory-label-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 800;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.factory-label-header .gs1 {
+  color: #64748b;
+  font-size: 9px;
+}
+
+.factory-label-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.factory-qr-img {
+  width: 58px;
+  height: 58px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.factory-label-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.factory-packet-code {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.factory-batch-ref {
+  font-size: 10px;
+  color: #475569;
+}
+
+.factory-scratch-key {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* ── PRINT MEDIA STYLES ──────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .factory-print-modal-overlay,
+  .factory-print-modal-overlay * {
+    visibility: visible;
+  }
+  .factory-print-top-bar {
+    display: none !important;
+  }
+  .factory-print-modal-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff;
+  }
+  .factory-label-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .factory-label-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+
