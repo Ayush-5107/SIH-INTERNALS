@@ -62,9 +62,13 @@ async def get_batch(batch_id: str, db: AsyncSession = Depends(get_db)):
     """
     Retrieves batch read model details by ID (incorporates Cache-Aside pattern).
     """
-    # 1. Check Redis Cache
     cache_key = CacheKeys.batch(batch_id)
-    cached = await redis_cache.get_json(cache_key)
+    try:
+        cached = await redis_cache.get_json(cache_key)
+    except Exception as e:
+        logger.warning(f"Redis cache GET failed: {e}. Bypassing to DB.")
+        cached = None
+
     if cached:
         logger.info(f"Batch cache hit: {batch_id}")
         return APIResponse(
@@ -85,7 +89,10 @@ async def get_batch(batch_id: str, db: AsyncSession = Depends(get_db)):
     batch_out = BatchOut.model_validate(batch)
     
     # 3. Store in Redis Cache
-    await redis_cache.set_json(cache_key, batch_out.model_dump(mode="json"), expire=3600)
+    try:
+        await redis_cache.set_json(cache_key, batch_out.model_dump(mode="json"), expire=3600)
+    except Exception as e:
+        logger.warning(f"Redis cache SET failed: {e}.")
     
     return APIResponse(
         success=True,

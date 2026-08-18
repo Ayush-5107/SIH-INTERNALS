@@ -32,7 +32,7 @@ const TABS: SolutionTab[] = [
     strongPart: 'without losing origin links.',
     desc: 'When sortex mills blend harvests from multiple farms, FoodTrace commits directed acyclic graph edges to PostgreSQL and Hyperledger Fabric to maintain bidirectional traceability.',
     img: '/images/logineko/farming-software-maps-solution.jpg',
-    link: '/track/batch/BATCH-MBTSDM2UM',
+    link: '/one-food?ref=batch-orange-001-raw',
   },
   {
     id: '2',
@@ -42,7 +42,7 @@ const TABS: SolutionTab[] = [
     strongPart: 'cryptographic seal verification.',
     desc: 'An open GS1 Digital Link outer QR code enables consumer journey inspection, while a concealed ECDSA inner credential under a scratch seal guarantees anti-counterfeit proof.',
     img: '/images/logineko/origin-solutions-for-transaprency-1536x1025.jpg',
-    link: '/verify',
+    link: '/one-food?ref=batch-orange-001-raw',
   },
   {
     id: '3',

@@ -20,7 +20,7 @@ class Event(Base):
     longitude = Column(Float, nullable=True)
     location_name = Column(String, nullable=True)
     block_number = Column(Integer, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Store conditions, expected custodians, testing reports
+    event_metadata = Column("metadata", JSON, nullable=True)  # Store conditions, expected custodians, testing reports
 
 class CustodyEvent(Base):
     __tablename__ = "custody_events"
@@ -33,7 +33,7 @@ class CustodyEvent(Base):
     event_type = Column(String, nullable=False)  # TRANSFER, RECEIVE
     timestamp = Column(DateTime, nullable=False)
     fabric_tx_id = Column(String, unique=True, nullable=False, index=True)
-    metadata = Column(JSON, nullable=True)  # Store conditions, location, etc.
+    event_metadata = Column("metadata", JSON, nullable=True)  # Store conditions, location, etc.
 
 class LedgerSync(Base):
     __tablename__ = "ledger_sync"
