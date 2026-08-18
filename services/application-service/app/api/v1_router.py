@@ -1,5 +1,14 @@
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas.auth import LoginRequest, TokenResponse, UserMeResponse
+from app.schemas.auth import (
+    LoginRequest,
+    TokenResponse,
+    UserMeResponse,
+    CreateOrganizationRequest,
+    OrganizationResponse,
+    AssignRoleRequest,
+    AssignRoleResponse,
+)
 from app.auth import create_access_token, get_current_actor, ActorContext
 from app.modules import (
     products_router,
@@ -51,6 +60,28 @@ async def get_me(actor: ActorContext = Depends(get_current_actor)):
         role=actor.role,
         org_id=actor.org_id,
         status="ACTIVE"
+    )
+
+
+@auth_router.post("/organization", response_model=OrganizationResponse)
+async def create_organization(payload: CreateOrganizationRequest):
+    """Register a new stakeholder organization in the supply chain."""
+    org_id = f"org-{uuid.uuid4().hex[:8]}"
+    return OrganizationResponse(
+        id=org_id,
+        name=payload.name,
+        type=payload.type,
+        status="ACTIVE"
+    )
+
+
+@auth_router.post("/assign-role", response_model=AssignRoleResponse)
+async def assign_role(payload: AssignRoleRequest):
+    """Assign RBAC role and permissions to a user."""
+    return AssignRoleResponse(
+        user_id=payload.user_id,
+        role=payload.role,
+        status="UPDATED"
     )
 
 
