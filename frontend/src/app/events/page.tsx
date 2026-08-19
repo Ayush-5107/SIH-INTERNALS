@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/shared/AuthGuard';
 import AppNav from '@/components/shared/AppNav';
 import { fetchEvents } from '@/lib/api';
+import { IconEvents } from '@/components/icons/Icons';
 import '../app.css';
 
 interface AppEvent {
@@ -24,6 +25,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [appliedFilter, setAppliedFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('ALL');
 
   useEffect(() => { load(''); }, []);
 
@@ -47,7 +49,9 @@ export default function EventsPage() {
         <div className="app-container">
           <div className="page-header">
             <div>
-              <h1 className="page-title">📋 Audit Trail & Events</h1>
+              <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.5px' }}>
+                <IconEvents size={28} color="#facc15" /> Audit Trail & Events
+              </h1>
               <p className="page-subtitle">Immutable record of all supply chain interactions ({events.length} events)</p>
             </div>
           </div>
@@ -63,9 +67,17 @@ export default function EventsPage() {
                 onChange={e => setFilter(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn btn-primary">Filter</button>
-            {appliedFilter && (
-              <button type="button" className="btn btn-ghost" onClick={() => { setFilter(''); setAppliedFilter(''); load(''); }}>
+            <div className="form-group" style={{ width: '200px', marginBottom: 0 }}>
+              <label className="form-label">Event Type</label>
+              <select className="form-input" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+                <option value="ALL">All Events</option>
+                <option value="SCAN">Scans</option>
+                <option value="CUSTODY">Custody Transfers</option>
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary">Search API</button>
+            {(appliedFilter || typeFilter !== 'ALL') && (
+              <button type="button" className="btn btn-ghost" onClick={() => { setFilter(''); setAppliedFilter(''); setTypeFilter('ALL'); load(''); }}>
                 Clear
               </button>
             )}
@@ -77,24 +89,27 @@ export default function EventsPage() {
 
           {loading ? (
             <div className="loading">Loading events…</div>
-          ) : events.length === 0 ? (
-            <div className="empty-state">No events found{appliedFilter ? ` for ${appliedFilter}` : ''}.</div>
-          ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Entity ID</th>
-                    <th>Actor</th>
-                    <th>Location</th>
-                    <th>Timestamp</th>
-                    <th>Fabric TX</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {events.map((ev, i) => (
-                    <tr key={ev.id || i}>
+          ) : (() => {
+            const displayedEvents = events.filter(ev => typeFilter === 'ALL' || String(ev.type || '').toUpperCase() === typeFilter);
+            if (displayedEvents.length === 0) {
+              return <div className="empty-state">No events found{appliedFilter ? ` for ${appliedFilter}` : ''}.</div>;
+            }
+            return (
+              <div className="table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Entity ID</th>
+                      <th>Actor</th>
+                      <th>Location</th>
+                      <th>Timestamp</th>
+                      <th>Fabric TX</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedEvents.map((ev, i) => (
+                      <tr key={ev.id || i}>
                       <td>
                         <span className={`badge ${ev.type === 'SCAN' ? 'badge-info' : 'badge-warning'}`}>
                           {ev.type || '—'}
@@ -108,11 +123,12 @@ export default function EventsPage() {
                         {ev.fabric_tx_id || '—'}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </AuthGuard>

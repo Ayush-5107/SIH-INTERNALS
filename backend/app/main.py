@@ -439,16 +439,33 @@ async def generate_units(payload: UnitCreate):
     today = datetime.date.today().strftime("%d %b %Y")
 
     def fallback(p):
+        from fastapi import HTTPException
         db = load_db()
         import random, string
+
+        batch_id = p.get("batchId")
+        batch = next((b for b in db.get("batches", []) if b["id"] == batch_id), None)
+        if not batch:
+            raise HTTPException(status_code=400, detail=f"Batch {batch_id} not found in registry.")
+
+        existing_units = [u for u in db.get("units", []) if u.get("batchId") == batch_id]
+        requested_count = p.get("count", 1)
+        batch_quantity = int(batch.get("quantity", 0))
+
+        if len(existing_units) + requested_count > batch_quantity:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot generate {requested_count} units. Batch limit exceeded ({len(existing_units)}/{batch_quantity} already generated)."
+            )
+
         created_units = []
-        for _ in range(p.get("count", 1)):
+        for _ in range(requested_count):
             unit_num = len(db["units"]) + 1001
             rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
             sec_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             unit = {
                 "id": f"UNIT-{unit_num}",
-                "batchId": p["batchId"],
+                "batchId": batch_id,
                 "status": "PRINTED",
                 "outerQR": f"QR-{rand_str}",
                 "innerCredential": f"SEC-{sec_code}",
@@ -585,10 +602,19 @@ async def verify_credential(payload: dict):
             }
         
         # It's physically linked to a real unit!
+        batch = next((b for b in db.get("batches", []) if b["id"] == unit["batchId"]), None)
+        product_name = "a valid product"
+        if batch:
+            product = next((p for p in db.get("products", []) if p["id"] == batch["productId"]), None)
+            if product:
+                product_name = product["name"]
+
         return {
             "code": code,
             "isAuthentic": True,
-            "message": f"Authenticity confirmed! This code belongs to Unit {unit['id']} from Batch {unit['batchId']}."
+            "unitId": unit["id"],
+            "batchId": unit["batchId"],
+            "message": f"Authenticity confirmed! This code belongs to '{product_name}' (Unit {unit['id']}) from Batch {unit['batchId']}."
         }
     else:
         return {

@@ -306,7 +306,7 @@ export default function DashboardPage() {
                     }}
                   >
                     <IconPlus size={14} color="#0f172a" />
-                    + Manage Batches
+                    Manage Batches
                   </a>
                 </div>
 
