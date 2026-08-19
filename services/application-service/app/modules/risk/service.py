@@ -11,6 +11,7 @@ class RiskService:
         self.data_client = get_data_client()
 
     async def propagate_risk(self, payload: RiskPropagateRequest, actor: ActorContext) -> RiskScopeResponse:
+        from app.schemas.risk import RiskNode, RiskEdge
         source_id = payload.source_batch_id
         direction = payload.direction.upper()
         
@@ -20,23 +21,53 @@ class RiskService:
         
         affected_parents: List[Dict[str, Any]] = []
         affected_children: List[Dict[str, Any]] = []
-        affected_orgs: set = {source_batch["producer_org_id"], source_batch["current_custodian_org_id"]}
+        affected_orgs: set = {source_batch.get("producer_org_id"), source_batch.get("current_custodian_org_id")}
+        
+        nodes: List[RiskNode] = [
+            RiskNode(id=source_id, type="batch", label=source_id, state=source_batch.get("lifecycle_state", "UNKNOWN"), org_id=source_batch.get("current_custodian_org_id"))
+        ]
+        edges: List[RiskEdge] = []
         
         # Upstream Traversal
         if direction in ["UPSTREAM", "BOTH"]:
-            parents = await self.data_client.get_parents(source_id)
-            for p in parents:
-                affected_parents.append(p)
-                affected_orgs.add(p["producer_org_id"])
-                affected_orgs.add(p["current_custodian_org_id"])
+            queue = [source_id]
+            visited = {source_id}
+            while queue:
+                curr_id = queue.pop(0)
+                parents = await self.data_client.get_parents(curr_id)
+                for p in parents:
+                    p_id = p.get("batch_id") or p.get("id")
+                    if p_id:
+                        edges.append(RiskEdge(source=p_id, target=curr_id, relation="PARENT_OF"))
+                        if p_id not in visited:
+                            visited.add(p_id)
+                            queue.append(p_id)
+                            affected_parents.append(p)
+                            affected_orgs.add(p.get("producer_org_id"))
+                            affected_orgs.add(p.get("current_custodian_org_id"))
+                            nodes.append(RiskNode(id=p_id, type="batch", label=p_id, state=p.get("lifecycle_state", "UNKNOWN"), org_id=p.get("current_custodian_org_id")))
         
         # Downstream Traversal
         if direction in ["DOWNSTREAM", "BOTH"]:
-            children = await self.data_client.get_children(source_id)
-            for c in children:
-                affected_children.append(c)
-                affected_orgs.add(c["producer_org_id"])
-                affected_orgs.add(c["current_custodian_org_id"])
+            queue = [source_id]
+            visited = {source_id}
+            while queue:
+                curr_id = queue.pop(0)
+                children = await self.data_client.get_children(curr_id)
+                for c in children:
+                    c_id = c.get("batch_id") or c.get("id")
+                    if c_id:
+                        edges.append(RiskEdge(source=curr_id, target=c_id, relation="PARENT_OF"))
+                        if c_id not in visited:
+                            visited.add(c_id)
+                            queue.append(c_id)
+                            affected_children.append(c)
+                            affected_orgs.add(c.get("producer_org_id"))
+                            affected_orgs.add(c.get("current_custodian_org_id"))
+                            nodes.append(RiskNode(id=c_id, type="batch", label=c_id, state=c.get("lifecycle_state", "UNKNOWN"), org_id=c.get("current_custodian_org_id")))
+        
+        # Filter None from affected_orgs
+        affected_orgs = {org for org in affected_orgs if org is not None}
         
         # Location Trace Extraction
         involved_batch_ids = {source_id}
@@ -89,6 +120,8 @@ class RiskService:
             affected_child_batches=affected_children,
             affected_organizations=list(affected_orgs),
             affected_locations=affected_locations,
+            nodes=nodes,
+            edges=edges,
             risk_level=risk_level,
             computed_at=computed_at
         )

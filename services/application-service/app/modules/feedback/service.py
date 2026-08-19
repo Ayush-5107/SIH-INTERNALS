@@ -26,20 +26,6 @@ class FeedbackService:
             )
             evidence_cid = ipfs_res.get("cid")
         
-        # Evaluate Escalation based on past incidents
-        past_incidents = await self.data_client.get_incidents(payload.batch_or_unit_id)
-        escalation_level = "LEVEL_1_WARNING"
-        if len(past_incidents) >= 2: # 2 past + 1 new = 3 complaints total
-            escalation_level = "ESCALATED_WARNING"
-            
-            # Automatically trigger risk propagation (simulated in Base Model)
-            try:
-                lifecycle_state = batch.get("lifecycle_state") or batch.get("state") if batch else None
-                if lifecycle_state and lifecycle_state not in ["BLOCKED", "RECALLED"]:
-                    pass
-            except Exception as e:
-                pass
-                
         # Step 3: Create Incident Record
         incident_id = f"inc-{uuid.uuid4().hex[:8]}"
         created_at_str = datetime.datetime.utcnow().isoformat()
@@ -51,8 +37,8 @@ class FeedbackService:
             "nearest_accountable_org_id": nearest_org_id,
             "evidence_cid": evidence_cid,
             "reporter_user_id": actor.user_id,
-            "status": "SUBMITTED" if escalation_level == "LEVEL_1_WARNING" else "ESCALATED",
-            "escalation_level": escalation_level,
+            "status": "OPEN",
+            "escalation_level": "STANDARD",
             "created_at": created_at_str
         }
         

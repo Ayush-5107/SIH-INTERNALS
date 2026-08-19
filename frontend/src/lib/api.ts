@@ -1,4 +1,14 @@
+import { getToken } from './auth';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+function getHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? (getToken() || 'ft-jwt-admin-ADMIN-demo') : 'ft-jwt-admin-ADMIN-demo';
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+}
 
 // ── Health ──────────────────────────────────────────────────
 export async function checkHealth() {
@@ -252,7 +262,9 @@ export async function fetchIncidents(productId?: string) {
     return await res.json();
   } catch {
     return [
-      { id: 'INC-9942', unitId: 'UNIT-1002', category: 'Spoilage', reporter: 'Consumer (App)', status: 'NEW', ipfsCid: 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco', date: '15 Aug 2026' },
+      { id: 'INC-9942', unitId: 'batch-apple-001-packaged', category: 'Pesticide Contamination', reporter: 'Consumer (Mobile App)', status: 'OPEN', ipfsCid: 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco', date: '14 Aug 2026' },
+      { id: 'INC-9943', unitId: 'batch-apple-retail-colaba', category: 'Spoilage & Odor', reporter: 'Store Manager (Colaba Branch)', status: 'OPEN', ipfsCid: 'QmCert1Z4eYmKgE5z34XpWw9G7DkF5d5n9y6jZ8t', date: '15 Aug 2026' },
+      { id: 'INC-9944', unitId: 'batch-apple-dist-north', category: 'Cold-Chain Breach', reporter: 'IoT Temp Sensor #TH-04', status: 'NEW', ipfsCid: 'QmLabReport001Z4eYmKgE5z34XpWw9G7DkF5d5n9y6', date: '16 Aug 2026' },
     ];
   }
 }
@@ -307,21 +319,98 @@ export async function propagateRisk(payload: { source_batch_id: string; directio
   try {
     const res = await fetch(`${API_BASE}/api/v1/risk/propagate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error();
     return await res.json();
   } catch {
+    const bid = payload.source_batch_id || 'batch-apple-001-packaged';
+    const dir = (payload.direction || 'BOTH').toUpperCase();
+
+    const allParents = [
+      { batch_id: 'batch-apple-001-raw', state: 'REGISTERED' },
+      { batch_id: 'batch-apple-002-raw', state: 'REGISTERED' },
+    ];
+    const allChildren = [
+      { batch_id: 'batch-apple-dist-north', state: 'IN_TRANSIT' },
+      { batch_id: 'batch-apple-dist-south', state: 'IN_TRANSIT' },
+      { batch_id: 'batch-apple-retail-colaba', state: 'RECEIVED' },
+      { batch_id: 'batch-apple-retail-andheri', state: 'RECEIVED' },
+      { batch_id: 'batch-apple-retail-pune', state: 'RECEIVED' },
+    ];
+
+    const allLocations = [
+      { latitude: 19.8762, longitude: 75.3433, location_name: 'Aurangabad, Maharashtra (Harvest Farm F-04)', timestamp: '2026-08-10T06:00:00Z', batch_id: 'batch-apple-001-raw', event_type: 'BATCH_REGISTERED', actor_msp: 'Org1MSP', block_number: '1', transaction_id: 'fabric-0001', stream: 'UPSTREAM' },
+      { latitude: 19.8850, longitude: 75.3590, location_name: 'Aurangabad, Maharashtra (Harvest Farm F-07)', timestamp: '2026-08-11T07:30:00Z', batch_id: 'batch-apple-002-raw', event_type: 'BATCH_REGISTERED', actor_msp: 'Org1MSP', block_number: '2', transaction_id: 'fabric-0005', stream: 'UPSTREAM' },
+      { latitude: 19.0760, longitude: 72.8777, location_name: 'Mumbai, Maharashtra (Processing Facility)', timestamp: '2026-08-11T09:00:00Z', batch_id: 'batch-apple-001-packaged', event_type: 'BATCH_PROCESSED', actor_msp: 'Org1MSP', block_number: '3', transaction_id: 'fabric-0002', stream: 'SOURCE' },
+      { latitude: 19.2183, longitude: 72.9781, location_name: 'Thane Distribution Hub (FastLogistics)', timestamp: '2026-08-12T14:00:00Z', batch_id: 'batch-apple-dist-north', event_type: 'BATCH_TRANSFERRED', actor_msp: 'Org2MSP', block_number: '9', transaction_id: 'fabric-0006', stream: 'DOWNSTREAM' },
+      { latitude: 19.0330, longitude: 73.0297, location_name: 'Navi Mumbai Hub (FastLogistics)', timestamp: '2026-08-12T16:00:00Z', batch_id: 'batch-apple-dist-south', event_type: 'BATCH_TRANSFERRED', actor_msp: 'Org2MSP', block_number: '10', transaction_id: 'fabric-0007', stream: 'DOWNSTREAM' },
+      { latitude: 18.9220, longitude: 72.8347, location_name: 'Colaba, Mumbai (FreshMart Store)', timestamp: '2026-08-13T11:00:00Z', batch_id: 'batch-apple-retail-colaba', event_type: 'BATCH_RECEIVED', actor_msp: 'Org2MSP', block_number: '14', transaction_id: 'fabric-0010', stream: 'DOWNSTREAM' },
+      { latitude: 19.1136, longitude: 72.8697, location_name: 'Andheri West, Mumbai (FreshMart Andheri)', timestamp: '2026-08-13T13:00:00Z', batch_id: 'batch-apple-retail-andheri', event_type: 'BATCH_RECEIVED', actor_msp: 'Org2MSP', block_number: '12', transaction_id: 'fabric-0008', stream: 'DOWNSTREAM' },
+      { latitude: 18.5204, longitude: 73.8567, location_name: 'Koregaon Park, Pune (FreshMart Pune)', timestamp: '2026-08-13T15:00:00Z', batch_id: 'batch-apple-retail-pune', event_type: 'BATCH_RECEIVED', actor_msp: 'Org2MSP', block_number: '13', transaction_id: 'fabric-0009', stream: 'DOWNSTREAM' },
+    ];
+
+    const sourceNode = { id: bid, type: 'batch', label: bid, state: 'RECEIVED', org_id: 'FreshMart' };
+    const upstreamNodes = [
+      { id: 'batch-apple-001-raw', type: 'batch', label: 'batch-apple-001-raw', state: 'REGISTERED', org_id: 'Green-Valley-Farms' },
+      { id: 'batch-apple-002-raw', type: 'batch', label: 'batch-apple-002-raw', state: 'REGISTERED', org_id: 'Green-Valley-Farms' },
+    ];
+    const downstreamNodes = [
+      { id: 'batch-apple-dist-north', type: 'batch', label: 'batch-apple-dist-north', state: 'IN_TRANSIT', org_id: 'FastLogistics' },
+      { id: 'batch-apple-dist-south', type: 'batch', label: 'batch-apple-dist-south', state: 'IN_TRANSIT', org_id: 'FastLogistics' },
+      { id: 'batch-apple-retail-colaba', type: 'batch', label: 'batch-apple-retail-colaba', state: 'RECEIVED', org_id: 'FreshMart' },
+      { id: 'batch-apple-retail-andheri', type: 'batch', label: 'batch-apple-retail-andheri', state: 'RECEIVED', org_id: 'FreshMart' },
+      { id: 'batch-apple-retail-pune', type: 'batch', label: 'batch-apple-retail-pune', state: 'RECEIVED', org_id: 'FreshMart' },
+    ];
+
+    const upstreamEdges = [
+      { source: 'batch-apple-001-raw', target: bid, relation: 'PARENT_OF' },
+      { source: 'batch-apple-002-raw', target: bid, relation: 'PARENT_OF' },
+    ];
+    const downstreamEdges = [
+      { source: bid, target: 'batch-apple-dist-north', relation: 'PARENT_OF' },
+      { source: bid, target: 'batch-apple-dist-south', relation: 'PARENT_OF' },
+      { source: 'batch-apple-dist-north', target: 'batch-apple-retail-andheri', relation: 'PARENT_OF' },
+      { source: 'batch-apple-dist-north', target: 'batch-apple-retail-pune', relation: 'PARENT_OF' },
+      { source: 'batch-apple-dist-south', target: 'batch-apple-retail-colaba', relation: 'PARENT_OF' },
+    ];
+
+    let filteredNodes = [sourceNode];
+    let filteredEdges: any[] = [];
+    let filteredOrgs: string[] = ['FreshMart'];
+    let filteredParents = (dir === 'UPSTREAM' || dir === 'BOTH') ? allParents : [];
+    let filteredChildren = (dir === 'DOWNSTREAM' || dir === 'BOTH') ? allChildren : [];
+
+    if (dir === 'UPSTREAM') {
+      filteredNodes = [...upstreamNodes, sourceNode];
+      filteredEdges = upstreamEdges;
+      filteredOrgs = ['Green Valley Citrus Farms', 'FreshHarvest Processing', 'FreshMart'];
+    } else if (dir === 'DOWNSTREAM') {
+      filteredNodes = [sourceNode, ...downstreamNodes];
+      filteredEdges = downstreamEdges;
+      filteredOrgs = ['FreshHarvest Processing', 'FastLogistics', 'FreshMart'];
+    } else {
+      filteredNodes = [...upstreamNodes, sourceNode, ...downstreamNodes];
+      filteredEdges = [...upstreamEdges, ...downstreamEdges];
+      filteredOrgs = ['Green Valley Citrus Farms', 'FreshHarvest Processing', 'FastLogistics', 'FreshMart'];
+    }
+
+    const filteredLocations = allLocations.filter(loc => {
+      if (dir === 'UPSTREAM') return loc.stream === 'UPSTREAM' || loc.stream === 'SOURCE';
+      if (dir === 'DOWNSTREAM') return loc.stream === 'DOWNSTREAM' || loc.stream === 'SOURCE';
+      return true;
+    });
+
     return {
-      source_batch_id: payload.source_batch_id,
-      direction: payload.direction || 'BOTH',
-      affected_parent_batches: [],
-      affected_child_batches: [
-        { batch_id: 'BATCH-FLOUR-881', state: 'IN_TRANSIT' },
-        { batch_id: 'BATCH-RTL-90A', state: 'ON_SHELF' },
-      ],
-      affected_organizations: ['Sahyadri Agro Processing', 'AgriTransit Logistics', 'GreenBasket Retail'],
+      source_batch_id: bid,
+      direction: dir,
+      affected_parent_batches: filteredParents,
+      affected_child_batches: filteredChildren,
+      affected_organizations: filteredOrgs,
+      affected_locations: filteredLocations,
+      nodes: filteredNodes,
+      edges: filteredEdges,
       risk_level: payload.risk_level || 'HIGH',
       computed_at: new Date().toISOString(),
     };

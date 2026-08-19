@@ -4,6 +4,7 @@ import AuthGuard from '@/components/shared/AuthGuard';
 import AppNav from '@/components/shared/AppNav';
 import { fetchIncidents } from '@/lib/api';
 import { IconIncidents } from '@/components/icons/Icons';
+import RiskPropagationModal from '@/components/modals/RiskPropagationModal';
 import '../app.css';
 
 interface Incident { id: string; unitId: string; category: string; reporter: string; status: string; ipfsCid: string; date: string; }
@@ -16,6 +17,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIncidents().then(data => {
@@ -63,6 +65,7 @@ export default function IncidentsPage() {
                     <th>Status</th>
                     <th>IPFS CID</th>
                     <th>Date</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -85,6 +88,15 @@ export default function IncidentsPage() {
                         </a>
                       </td>
                       <td className="mono">{inc.date}</td>
+                      <td>
+                        <button 
+                          onClick={() => setSelectedBatchId(inc.unitId)}
+                          className="btn btn-sm btn-danger"
+                          style={{ fontSize: '11px', padding: '4px 10px' }}
+                        >
+                          View Risk Trace
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -97,6 +109,13 @@ export default function IncidentsPage() {
           </div>
         </div>
       </div>
+      
+      {selectedBatchId && (
+        <RiskPropagationModal 
+          batchId={selectedBatchId} 
+          onClose={() => setSelectedBatchId(null)} 
+        />
+      )}
     </AuthGuard>
   );
 }

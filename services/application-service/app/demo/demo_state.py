@@ -116,9 +116,10 @@ class SharedDemoState:
 
         # --- BATCHES (Canonical Traceability Journey) ---
         # The Journey: Producer -> Processor -> Transporter -> Retailer
+        # Extended with a wide tree: 2 raw batches -> 1 packaged -> 2 distribution batches -> 3 store batches
         
         self.batches: Dict[str, Dict[str, Any]] = {
-            # 1. Harvested Batch (Producer)
+            # 1. Raw Harvest Batch A (Green Valley)
             "batch-apple-001-raw": {
                 "batch_id": "batch-apple-001-raw",
                 "product_id": "prd-apple-001",
@@ -128,19 +129,27 @@ class SharedDemoState:
                 "quantity": 5000.0,
                 "unit_of_measure": "KG",
                 "created_at": now,
-                "metadata": {
-                    "harvest_date": "2026-08-10",
-                    "field_id": "F-04",
-                    "organic_certified": True
-                }
+                "metadata": {"harvest_date": "2026-08-10", "field_id": "F-04", "organic_certified": True}
             },
-            # 2. Processed/Packaged Batch (Processor)
+            # 2. Raw Harvest Batch B - second field (Green Valley)
+            "batch-apple-002-raw": {
+                "batch_id": "batch-apple-002-raw",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_GREEN_VALLEY_ID,
+                "lifecycle_state": "REGISTERED",
+                "quantity": 3800.0,
+                "unit_of_measure": "KG",
+                "created_at": now,
+                "metadata": {"harvest_date": "2026-08-11", "field_id": "F-07", "organic_certified": True}
+            },
+            # 3. Processed/Packaged Batch (FreshHarvest merged both raw batches)
             "batch-apple-001-packaged": {
                 "batch_id": "batch-apple-001-packaged",
                 "product_id": "prd-apple-001",
                 "producer_org_id": ORG_GREEN_VALLEY_ID,
-                "current_custodian_org_id": ORG_FRESH_MART_ID,  # Has reached Retailer!
-                "lifecycle_state": "RECEIVED", 
+                "current_custodian_org_id": ORG_FRESH_MART_ID,
+                "lifecycle_state": "RECEIVED",
                 "quantity": 1000.0,
                 "unit_of_measure": "BOXES",
                 "unit": "L",
@@ -156,18 +165,129 @@ class SharedDemoState:
                     ]
                 },
                 "created_at": now
+            },
+            # 4. Distribution Batch - North Zone (FastLogistics)
+            "batch-apple-dist-north": {
+                "batch_id": "batch-apple-dist-north",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_FAST_LOGISTICS_ID,
+                "lifecycle_state": "IN_TRANSIT",
+                "quantity": 500.0,
+                "unit_of_measure": "BOXES",
+                "metadata": {"route": "Thane → Nashik → Pune", "vehicle_no": "MH-04-AB-1234"},
+                "created_at": now
+            },
+            # 5. Distribution Batch - South Zone (FastLogistics)
+            "batch-apple-dist-south": {
+                "batch_id": "batch-apple-dist-south",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_FAST_LOGISTICS_ID,
+                "lifecycle_state": "IN_TRANSIT",
+                "quantity": 500.0,
+                "unit_of_measure": "BOXES",
+                "metadata": {"route": "Thane → Navi Mumbai → Colaba", "vehicle_no": "MH-04-CD-5678"},
+                "created_at": now
+            },
+            # 6. Store Batch - FreshMart Colaba
+            "batch-apple-retail-colaba": {
+                "batch_id": "batch-apple-retail-colaba",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_FRESH_MART_ID,
+                "lifecycle_state": "RECEIVED",
+                "quantity": 200.0,
+                "unit_of_measure": "BOXES",
+                "metadata": {"store": "FreshMart Colaba", "shelf_life_days": 14},
+                "created_at": now
+            },
+            # 7. Store Batch - FreshMart Andheri
+            "batch-apple-retail-andheri": {
+                "batch_id": "batch-apple-retail-andheri",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_FRESH_MART_ID,
+                "lifecycle_state": "RECEIVED",
+                "quantity": 150.0,
+                "unit_of_measure": "BOXES",
+                "metadata": {"store": "FreshMart Andheri", "shelf_life_days": 14},
+                "created_at": now
+            },
+            # 8. Store Batch - FreshMart Pune
+            "batch-apple-retail-pune": {
+                "batch_id": "batch-apple-retail-pune",
+                "product_id": "prd-apple-001",
+                "producer_org_id": ORG_GREEN_VALLEY_ID,
+                "current_custodian_org_id": ORG_FRESH_MART_ID,
+                "lifecycle_state": "RECEIVED",
+                "quantity": 150.0,
+                "unit_of_measure": "BOXES",
+                "metadata": {"store": "FreshMart Pune", "shelf_life_days": 14},
+                "created_at": now
             }
         }
 
         # --- LINEAGE (Parents / Children) ---
+        # Full tree:
+        #   batch-apple-001-raw  ─┐
+        #                          ├─> batch-apple-001-packaged ─> batch-apple-dist-north ─> batch-apple-retail-andheri
+        #   batch-apple-002-raw  ─┘                             ─> batch-apple-dist-north ─> batch-apple-retail-pune
+        #                                                        ─> batch-apple-dist-south ─> batch-apple-retail-colaba
         self.lineage_edges: List[Dict[str, Any]] = [
+            # Two raw batches → one packaged batch
             {
                 "edge_id": "edge-apple-proc-1",
                 "parent_batch_id": "batch-apple-001-raw",
                 "child_batch_id": "batch-apple-001-packaged",
-                "metadata": {"operation": "Washing and Packaging"},
+                "metadata": {"operation": "Washing and Packaging - Field F-04 Contribution"},
                 "created_at": now
-            }
+            },
+            {
+                "edge_id": "edge-apple-proc-2",
+                "parent_batch_id": "batch-apple-002-raw",
+                "child_batch_id": "batch-apple-001-packaged",
+                "metadata": {"operation": "Washing and Packaging - Field F-07 Contribution"},
+                "created_at": now
+            },
+            # Packaged → two distribution batches
+            {
+                "edge_id": "edge-apple-dist-north",
+                "parent_batch_id": "batch-apple-001-packaged",
+                "child_batch_id": "batch-apple-dist-north",
+                "metadata": {"operation": "Split for North Zone Distribution"},
+                "created_at": now
+            },
+            {
+                "edge_id": "edge-apple-dist-south",
+                "parent_batch_id": "batch-apple-001-packaged",
+                "child_batch_id": "batch-apple-dist-south",
+                "metadata": {"operation": "Split for South Zone Distribution"},
+                "created_at": now
+            },
+            # North dist → Andheri + Pune stores
+            {
+                "edge_id": "edge-apple-retail-andheri",
+                "parent_batch_id": "batch-apple-dist-north",
+                "child_batch_id": "batch-apple-retail-andheri",
+                "metadata": {"operation": "Store Delivery - Andheri Branch"},
+                "created_at": now
+            },
+            {
+                "edge_id": "edge-apple-retail-pune",
+                "parent_batch_id": "batch-apple-dist-north",
+                "child_batch_id": "batch-apple-retail-pune",
+                "metadata": {"operation": "Store Delivery - Pune Branch"},
+                "created_at": now
+            },
+            # South dist → Colaba store
+            {
+                "edge_id": "edge-apple-retail-colaba",
+                "parent_batch_id": "batch-apple-dist-south",
+                "child_batch_id": "batch-apple-retail-colaba",
+                "metadata": {"operation": "Store Delivery - Colaba Branch"},
+                "created_at": now
+            },
         ]
 
         # --- UNITS & QR ---
@@ -329,6 +449,150 @@ class SharedDemoState:
                         "expected_custodian": None
                     }
                 }
+            },
+            # Events for the second raw batch (Field F-07)
+            {
+                "event_id": "evt-5",
+                "type": "BATCH_REGISTERED",
+                "target_id": "batch-apple-002-raw",
+                "actor_org_id": ORG_GREEN_VALLEY_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0005",
+                "block_number": 2,
+                "actor_msp": "Org1MSP",
+                "channel_id": "traceability-channel",
+                "state_before": None,
+                "state_after": "REGISTERED",
+                "latitude": 19.8850,
+                "longitude": 75.3590,
+                "location_name": "Aurangabad, Maharashtra (Field F-07)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "Producer registered second raw batch from field F-07",
+                    "actor_organization_name": "Green Valley Citrus Farms",
+                    "actor_role": "PRODUCER",
+                    "conditions": {"temperature": "22C", "humidity": "58%", "crop_condition": "EXCELLENT"},
+                }
+            },
+            # Events for North Zone Distribution
+            {
+                "event_id": "evt-6",
+                "type": "BATCH_TRANSFERRED",
+                "target_id": "batch-apple-dist-north",
+                "actor_org_id": ORG_FAST_LOGISTICS_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0006",
+                "block_number": 9,
+                "actor_msp": "Org2MSP",
+                "channel_id": "traceability-channel",
+                "state_before": "RECEIVED",
+                "state_after": "IN_TRANSIT",
+                "latitude": 19.2183,
+                "longitude": 72.9781,
+                "location_name": "Thane Distribution Hub (FastLogistics)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "North Zone distribution vehicle dispatched",
+                    "actor_organization_name": "FastLogistics",
+                    "actor_role": "TRANSPORTER",
+                    "vehicle_no": "MH-04-AB-1234",
+                    "conditions": {"temperature_maintained": "4C", "storage": "REFRIGERATED"}
+                }
+            },
+            # Events for South Zone Distribution
+            {
+                "event_id": "evt-7",
+                "type": "BATCH_TRANSFERRED",
+                "target_id": "batch-apple-dist-south",
+                "actor_org_id": ORG_FAST_LOGISTICS_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0007",
+                "block_number": 10,
+                "actor_msp": "Org2MSP",
+                "channel_id": "traceability-channel",
+                "state_before": "RECEIVED",
+                "state_after": "IN_TRANSIT",
+                "latitude": 19.0330,
+                "longitude": 73.0297,
+                "location_name": "Navi Mumbai Logistics Hub (FastLogistics)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "South Zone distribution vehicle dispatched",
+                    "actor_organization_name": "FastLogistics",
+                    "actor_role": "TRANSPORTER",
+                    "vehicle_no": "MH-04-CD-5678",
+                    "conditions": {"temperature_maintained": "4C", "storage": "REFRIGERATED"}
+                }
+            },
+            # Store receipt events
+            {
+                "event_id": "evt-8",
+                "type": "BATCH_RECEIVED",
+                "target_id": "batch-apple-retail-andheri",
+                "actor_org_id": ORG_FRESH_MART_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0008",
+                "block_number": 12,
+                "actor_msp": "Org2MSP",
+                "channel_id": "traceability-channel",
+                "state_before": "IN_TRANSIT",
+                "state_after": "RECEIVED",
+                "latitude": 19.1136,
+                "longitude": 72.8697,
+                "location_name": "Andheri West, Mumbai (FreshMart Andheri)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "FreshMart Andheri received stock",
+                    "actor_organization_name": "FreshMart",
+                    "actor_role": "RETAILER",
+                    "conditions": {"storage": "REFRIGERATED", "temperature_c": 4.2, "quality_status": "ACCEPTED"}
+                }
+            },
+            {
+                "event_id": "evt-9",
+                "type": "BATCH_RECEIVED",
+                "target_id": "batch-apple-retail-pune",
+                "actor_org_id": ORG_FRESH_MART_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0009",
+                "block_number": 13,
+                "actor_msp": "Org2MSP",
+                "channel_id": "traceability-channel",
+                "state_before": "IN_TRANSIT",
+                "state_after": "RECEIVED",
+                "latitude": 18.5204,
+                "longitude": 73.8567,
+                "location_name": "Koregaon Park, Pune (FreshMart Pune)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "FreshMart Pune received stock",
+                    "actor_organization_name": "FreshMart",
+                    "actor_role": "RETAILER",
+                    "conditions": {"storage": "REFRIGERATED", "temperature_c": 4.8, "quality_status": "ACCEPTED"}
+                }
+            },
+            {
+                "event_id": "evt-10",
+                "type": "BATCH_RECEIVED",
+                "target_id": "batch-apple-retail-colaba",
+                "actor_org_id": ORG_FRESH_MART_ID,
+                "actor_user_id": "00000000-0000-0000-0000-000000000000",
+                "fabric_tx_id": "tx-demo-fabric-0010",
+                "block_number": 14,
+                "actor_msp": "Org2MSP",
+                "channel_id": "traceability-channel",
+                "state_before": "IN_TRANSIT",
+                "state_after": "RECEIVED",
+                "latitude": 18.9220,
+                "longitude": 72.8347,
+                "location_name": "Colaba, Mumbai (FreshMart Store)",
+                "timestamp": now,
+                "metadata": {
+                    "action": "FreshMart Colaba received stock",
+                    "actor_organization_name": "FreshMart",
+                    "actor_role": "RETAILER",
+                    "conditions": {"storage": "REFRIGERATED", "temperature_c": 4.5, "quality_status": "ACCEPTED"}
+                }
             }
         ]
         
@@ -357,8 +621,37 @@ class SharedDemoState:
             "inc-demo-1": {
                 "incident_id": "inc-demo-1",
                 "batch_id": "batch-apple-001-packaged",
+                "unitId": "batch-apple-001-packaged",
+                "category": "Pesticide Contamination",
+                "reporter": "Consumer (Mobile App)",
                 "status": "OPEN",
-                "description": "Consumer reported illness after consuming product.",
+                "description": "Lab test alert: Elevated chemical residue detected in packaged apple units.",
+                "ipfsCid": "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+                "date": "14 Aug 2026",
+                "created_at": now
+            },
+            "inc-demo-2": {
+                "incident_id": "inc-demo-2",
+                "batch_id": "batch-apple-retail-colaba",
+                "unitId": "batch-apple-retail-colaba",
+                "category": "Spoilage & Odor",
+                "reporter": "Store Manager (Colaba Branch)",
+                "status": "OPEN",
+                "description": "Premature fermentation reported in stored boxes at retail outlet.",
+                "ipfsCid": "QmCert1Z4eYmKgE5z34XpWw9G7DkF5d5n9y6jZ8t",
+                "date": "15 Aug 2026",
+                "created_at": now
+            },
+            "inc-demo-3": {
+                "incident_id": "inc-demo-3",
+                "batch_id": "batch-apple-dist-north",
+                "unitId": "batch-apple-dist-north",
+                "category": "Cold-Chain Breach",
+                "reporter": "IoT Temperature Sensor #TH-04",
+                "status": "NEW",
+                "description": "Temperature excursion above 12°C recorded for 4 continuous hours in transit.",
+                "ipfsCid": "QmLabReport001Z4eYmKgE5z34XpWw9G7DkF5d5n9y6",
+                "date": "16 Aug 2026",
                 "created_at": now
             }
         }

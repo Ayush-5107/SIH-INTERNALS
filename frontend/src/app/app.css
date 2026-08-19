@@ -543,4 +543,161 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
   }
 }
 
+/* ── RISK PROPAGATION MODAL ──────────────────────── */
+.risk-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
 
+.risk-modal-content {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.risk-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.risk-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.risk-modal-icon {
+  background: #fee2e2;
+  color: #ef4444;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.segmented-control {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 20px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.segment-btn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.segment-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.risk-modal-close {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.risk-modal-body {
+  padding: 24px;
+  background: #f8fafc;
+}
+
+.source-node-card {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #ffffff;
+  margin: 0 auto 32px auto;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.source-node-alert {
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.source-node-id {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.source-node-meta {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.risk-section-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.risk-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.org-pill {
+  border: 1px solid #fef08a;
+  background: #fefce8;
+  color: #854d0e;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
